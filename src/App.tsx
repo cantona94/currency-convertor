@@ -2,9 +2,18 @@ import React from 'react';
 import { Block } from './Block';
 import './index.scss';
 
+var myHeaders = new Headers();
+myHeaders.append("apikey", "vZIHHjfga1xtoNL2YD4tGNqUl38FWcdo");
+
+var requestOptions = {
+  method: 'GET',
+  redirect: 'follow',
+  headers: myHeaders
+};
+
 function App() {
-  const [fromCurrency, setFromCurrency] = React.useState("RUB");
-  const [toCurrency, setToCurrency] = React.useState("USD");
+  const [fromCurrency, setFromCurrency] = React.useState("USDRUB");
+  const [toCurrency, setToCurrency] = React.useState("USDBMD");
   const [fromPrice, setFromPrice] = React.useState(0);
   const [toPrice, setToPrice] = React.useState(1);
 
@@ -12,11 +21,12 @@ function App() {
   const ratesRef = React.useRef({});
 
   React.useEffect(() => {
-    fetch('https://cdn.cur.su/api/latest.json')
+    fetch('https://api.apilayer.com/currency_data/live?base=USD&symbols=EUR,GBP,RUB', requestOptions)
       .then((res) => res.json())
       .then((json) => {
         // setRates(json.rates);
-        ratesRef.current = json.rates;
+        ratesRef.current = json.quotes;
+        console.log(json.quotes);
         onChangeToPrice(1);
       })
       .catch((err) => {
