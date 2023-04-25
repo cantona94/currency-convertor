@@ -2,23 +2,21 @@ import React from 'react';
 import { Block } from './Block';
 import './index.scss';
 
-var myHeaders = new Headers();
+const myHeaders = new Headers();
 myHeaders.append("apikey", "vZIHHjfga1xtoNL2YD4tGNqUl38FWcdo");
 
-var requestOptions = {
-  method: 'GET',
-  redirect: 'follow',
+const requestOptions = {
   headers: myHeaders
 };
 
-function App() {
+function App(): JSX.Element {
   const [fromCurrency, setFromCurrency] = React.useState("USDRUB");
   const [toCurrency, setToCurrency] = React.useState("USDBMD");
   const [fromPrice, setFromPrice] = React.useState(0);
   const [toPrice, setToPrice] = React.useState(1);
 
   // const [rates, setRates] = React.useState({});
-  const ratesRef = React.useRef({});
+  const ratesRef = React.useRef(null);
 
   React.useEffect(() => {
     fetch('https://api.apilayer.com/currency_data/live?base=USD&symbols=EUR,GBP,RUB', requestOptions)
@@ -26,7 +24,6 @@ function App() {
       .then((json) => {
         // setRates(json.rates);
         ratesRef.current = json.quotes;
-        console.log(json.quotes);
         onChangeToPrice(1);
       })
       .catch((err) => {
@@ -35,42 +32,46 @@ function App() {
       });
   }, []);
 
-  const onChangeFromPrice = (value) => {
-     const price = value / ratesRef.current[fromCurrency];
-     const result = price * ratesRef.current[toCurrency];
-     setToPrice(result.toFixed(2));
-     setFromPrice(value);
+  const onChangeFromPrice = (value: number) => {
+    if (ratesRef.current) {
+      const price = value / ratesRef.current[fromCurrency];
+      const result = price * ratesRef.current[toCurrency];
+      setToPrice(parseFloat(result.toFixed(2)));
+      setFromPrice(value);
+    }
   };
 
-  const onChangeToPrice = (value) => {
-    const result = (ratesRef.current[fromCurrency] / ratesRef.current[toCurrency]) * value;
-    setFromPrice(result.toFixed(2)); 
-    setToPrice(value);
- };
+  const onChangeToPrice = (value: number) => {
+    if (ratesRef.current) {
+      const result = (ratesRef.current[fromCurrency] / ratesRef.current[toCurrency]) * value;
+      setFromPrice(parseFloat(result.toFixed(2)));
+      setToPrice(value);
+    }
+  };
 
- React.useEffect(() => {
+  React.useEffect(() => {
     onChangeFromPrice(fromPrice);
- }, [fromCurrency]);
+  }, [fromCurrency]);
 
- React.useEffect(() => {
+  React.useEffect(() => {
     onChangeToPrice(toPrice);
-}, [toCurrency]);
+  }, [toCurrency]);
 
 
   return (
     <div className="App">
-      <Block 
-        value={fromPrice} 
-        currency={fromCurrency} 
-        onChangeCurrency={setFromCurrency} 
-        onChangeValue={onChangeFromPrice} 
+      <Block
+        value={fromPrice}
+        currency={fromCurrency}
+        onChangeCurrency={setFromCurrency}
+        onChangeValue={onChangeFromPrice}
       />
-      <Block 
-        value={toPrice} 
-        currency={toCurrency} 
-        onChangeCurrency={setToCurrency} 
-        onChangeValue={onChangeToPrice} 
-      />   
+      <Block
+        value={toPrice}
+        currency={toCurrency}
+        onChangeCurrency={setToCurrency}
+        onChangeValue={onChangeToPrice}
+      />
     </div>
   );
 }
